@@ -3,17 +3,22 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
+// Custom Errors
 error PriceMustBeGreaterThanZero();
 error NotOwner();
 error NotApproved();
 error AlreadyListed(address nftAddress, uint256 tokenId);
 
+// Main Contract
 contract NftMart {
+
+    // Structs
     struct Listing {
         uint256 price;
         address seller;
     }
 
+    // Events
     event NftListed(
         address indexed seller,
         address indexed nftAddress,
@@ -21,8 +26,11 @@ contract NftMart {
         uint256 price
     );
 
+    // State Variables
     mapping(address => mapping(uint256 => Listing)) private s_listings;
 
+
+    // Modifiers
     modifier isOwner(
         address _nftAddress,
         uint256 _tokenId,
@@ -40,6 +48,14 @@ contract NftMart {
         _;
     }
 
+    // Functions
+    
+    /**
+     * @dev List an NFT for sale.
+     * @param _nftAddress The address of the NFT contract.
+     * @param _tokenId The ID of the token to list.
+     * @param _price The price at which to list the NFT.
+     */
     function listNFT(
         address _nftAddress,
         uint256 _tokenId,
