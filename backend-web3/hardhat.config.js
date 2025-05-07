@@ -13,7 +13,7 @@ const COINMARKETCAP_API_KEY =
     process.env.COINMARKETCAP_API_KEY || "COINMARKETCAP_API_KEY"
 // export modules
 module.exports = {
-    solidity: "0.8.19",
+    solidity: "0.8.20",
     networks: {
         sepolia: {
             url: SEPOLIA_RPC,
