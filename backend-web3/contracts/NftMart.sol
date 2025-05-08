@@ -143,4 +143,26 @@ contract NftMart is ReentrancyGuard {
         delete s_listings[_nftAddress][_tokenId];
         emit NftCanceled(msg.sender, _nftAddress, _tokenId);
     }
+
+    /**
+     * @dev Update the price of a listing.
+     * @param _nftAddress The address of the NFT contract.
+     * @param _tokenId The ID of the token
+     * @param _newPrice The new price to set.
+     */
+    function updateListingPrice(
+        address _nftAddress,
+        uint256 _tokenId,
+        uint256 _newPrice
+    )
+        external
+        isOwner(_nftAddress, _tokenId, msg.sender)
+        isListed(_nftAddress, _tokenId)
+    {
+        if (_newPrice <= 0) {
+            revert PriceMustBeGreaterThanZero();
+        }
+        s_listings[_nftAddress][_tokenId].price = _newPrice;
+        emit NftListed(msg.sender, _nftAddress, _tokenId, _newPrice);
+    }
 }
