@@ -34,6 +34,11 @@ contract NftMart is ReentrancyGuard {
         uint256 indexed tokenId,
         uint256 price
     );
+    event NftCanceled(
+        address indexed seller,
+        address indexed nftAddress,
+        uint256 indexed tokenId
+    );
 
     // State Variables
     mapping(address => mapping(uint256 => Listing)) private s_listings;
@@ -120,5 +125,22 @@ contract NftMart is ReentrancyGuard {
             }
         }
         emit NftBought(msg.sender, _nftAddress, _tokenId, listing.price);
+    }
+
+    /**
+     * @dev cancels a listing.
+     * @param _nftAddress The address of the NFT contract.
+     * @param _tokenId The ID of the token
+     */
+    function cancelListing(
+        address _nftAddress,
+        uint256 _tokenId
+    )
+        external
+        isOwner(_nftAddress, _tokenId, msg.sender)
+        isListed(_nftAddress, _tokenId)
+    {
+        delete s_listings[_nftAddress][_tokenId];
+        emit NftCanceled(msg.sender, _nftAddress, _tokenId);
     }
 }
