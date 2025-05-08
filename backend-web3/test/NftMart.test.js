@@ -72,4 +72,64 @@ const { developmentChains } = require("../helper-hardhat-config")
                   ).to.be.revertedWithCustomError(nftMart, "AlreadyListed")
               })
           })
+          describe("buyNFT", function () {
+              // not listed can't buy
+              it("reverts if not listed", async () => {
+                  await expect(
+                      nftMart.buyNFT(nft.target, tokenId),
+                  ).to.be.revertedWithCustomError(nftMart, "NotListed")
+              })
+              // not enough ether can't buy
+              it("reverts if not enough ether", async () => {
+                  await nftMart.listNFT(nft.target, tokenId, price)
+                  await expect(
+                      nftMart.connect(player).buyNFT(nft.target, tokenId, {
+                          value: ethers.parseEther("0.001"),
+                      }),
+                  ).to.be.revertedWithCustomError(nftMart, "PriceNotMet")
+              })
+              // is transaction successful and event emitted
+              it("transfers the token and emits event", async () => {
+                  await nftMart.listNFT(nft.target, tokenId, price)
+                  await expect(
+                      nftMart
+                          .connect(player)
+                          .buyNFT(nft.target, tokenId, { value: price }),
+                  )
+                      .to.emit(nftMart, "NftBought")
+                      .withArgs(player.address, nft.target, tokenId, price)
+
+                  const newNftOwner = await nft.ownerOf(tokenId)
+                  assert(newNftOwner == player.address)
+
+                  const listedNft = await nftMart.getListing(
+                      nft.target,
+                      tokenId,
+                  )
+                  assert(listedNft.seller == ethers.ZeroAddress)
+                  assert(listedNft.price == 0)
+              })
+              // is excess ether returned
+              it("returns excess ether", async () => {
+                  await nftMart.listNFT(nft.target, tokenId, price)
+                  const playerBalanceBefore = await ethers.provider.getBalance(
+                      player.address,
+                  )
+                  const txResponse = await nftMart
+                      .connect(player)
+                      .buyNFT(nft.target, tokenId, {
+                          value: ethers.parseEther("0.1"),
+                      })
+                  const txReceipt = await txResponse.wait(1)
+                  const { gasUsed, gasPrice } = txReceipt
+                  const gasCost = gasUsed * gasPrice
+                  const playerBalanceAfter = await ethers.provider.getBalance(
+                      player.address,
+                  )
+                  assert(
+                      (playerBalanceAfter + gasCost).toString() ==
+                          (playerBalanceBefore - price).toString(),
+                  )
+              })
+          })
       })
