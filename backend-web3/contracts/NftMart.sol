@@ -12,6 +12,7 @@ error AlreadyListed(address nftAddress, uint256 tokenId);
 error PriceNotMet(address nftAddress, uint256 tokenId, uint256 price);
 error NotListed(address nftAddress, uint256 tokenId);
 error TransferFailed();
+error NoProceeds();
 
 // Main Contract
 contract NftMart is ReentrancyGuard {
@@ -164,5 +165,20 @@ contract NftMart is ReentrancyGuard {
         }
         s_listings[_nftAddress][_tokenId].price = _newPrice;
         emit NftListed(msg.sender, _nftAddress, _tokenId, _newPrice);
+    }
+
+    /**
+     * @dev Withdraw proceeds from sales.
+     */
+    function withdrawProceeds() external nonReentrant {
+        uint256 proceeds = s_proceeds[msg.sender];
+        if (proceeds <= 0) {
+            revert NoProceeds();
+        }
+        s_proceeds[msg.sender] = 0;
+        (bool success, ) = payable(msg.sender).call{value: proceeds}("");
+        if (!success) {
+            revert TransferFailed();
+        }
     }
 }
