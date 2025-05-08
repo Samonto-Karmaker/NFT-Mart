@@ -69,7 +69,7 @@ contract NftMart is ReentrancyGuard {
         _;
     }
 
-    // Functions
+    // Main Functions
 
     /**
      * @dev List an NFT for sale.
@@ -180,5 +180,29 @@ contract NftMart is ReentrancyGuard {
         if (!success) {
             revert TransferFailed();
         }
+    }
+
+    // Getters
+
+    /**
+     * @dev Get the listing for a specific NFT.
+     * @param _nftAddress The address of the NFT contract.
+     * @param _tokenId The ID of the token
+     * @return The listing details.
+     */
+    function getListing(
+        address _nftAddress,
+        uint256 _tokenId
+    ) external view returns (Listing memory) {
+        return s_listings[_nftAddress][_tokenId];
+    }
+
+    /**
+     * @dev Get the proceeds for a specific seller.
+     * @param _seller The address of the seller.
+     * @return The proceeds amount.
+     */
+    function getProceeds(address _seller) external view returns (uint256) {
+        return s_proceeds[_seller];
     }
 }
