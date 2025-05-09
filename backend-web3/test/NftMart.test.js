@@ -205,37 +205,38 @@ const { developmentChains } = require("../helper-hardhat-config")
                   )
                   assert(listedNft.price.toString() == newPrice.toString())
               })
-              describe("withdrawProceeds", function () {
-                  // no proceeds can't withdraw
-                  it("reverts if no proceeds", async () => {
-                      await expect(
-                          nftMart.withdrawProceeds(),
-                      ).to.be.revertedWithCustomError(nftMart, "NoProceeds")
-                  })
-                  // withdraw proceeds
-                  it("withdraws proceeds", async () => {
-                      await nftMart.listNFT(nft.target, tokenId, price)
-                      const ownerBalanceBefore =
-                          await ethers.provider.getBalance(deployer.address)
-                      const txResponseBuy = await nftMart
-                          .connect(player)
-                          .buyNFT(nft.target, tokenId, { value: price })
-                      await txResponseBuy.wait(1)
+          })
+          describe("withdrawProceeds", function () {
+              // no proceeds can't withdraw
+              it("reverts if no proceeds", async () => {
+                  await expect(
+                      nftMart.withdrawProceeds(),
+                  ).to.be.revertedWithCustomError(nftMart, "NoProceeds")
+              })
+              // withdraw proceeds
+              it("withdraws proceeds", async () => {
+                  await nftMart.listNFT(nft.target, tokenId, price)
+                  const ownerBalanceBefore = await ethers.provider.getBalance(
+                      deployer.address,
+                  )
+                  const txResponseBuy = await nftMart
+                      .connect(player)
+                      .buyNFT(nft.target, tokenId, { value: price })
+                  await txResponseBuy.wait(1)
 
-                      const txResponseWithdraw =
-                          await nftMart.withdrawProceeds()
-                      const txReceiptWithdraw = await txResponseWithdraw.wait(1)
-                      const { gasUsed, gasPrice } = txReceiptWithdraw
-                      const gasCost = gasUsed * gasPrice
+                  const txResponseWithdraw = await nftMart.withdrawProceeds()
+                  const txReceiptWithdraw = await txResponseWithdraw.wait(1)
+                  const { gasUsed, gasPrice } = txReceiptWithdraw
+                  const gasCost = gasUsed * gasPrice
 
-                      const ownerBalanceAfter =
-                          await ethers.provider.getBalance(deployer.address)
+                  const ownerBalanceAfter = await ethers.provider.getBalance(
+                      deployer.address,
+                  )
 
-                      assert(
-                          (ownerBalanceAfter + gasCost).toString() ==
-                              (ownerBalanceBefore + price).toString(),
-                      )
-                  })
+                  assert(
+                      (ownerBalanceAfter + gasCost).toString() ==
+                          (ownerBalanceBefore + price).toString(),
+                  )
               })
           })
       })
