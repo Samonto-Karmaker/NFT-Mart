@@ -132,4 +132,32 @@ const { developmentChains } = require("../helper-hardhat-config")
                   )
               })
           })
+          describe("cancelListing", function () {
+              // not listed can't cancel
+              it("reverts if not listed", async () => {
+                  await expect(
+                      nftMart.cancelListing(nft.target, tokenId),
+                  ).to.be.revertedWithCustomError(nftMart, "NotListed")
+              })
+              // not owner can't cancel
+              it("reverts if not owner", async () => {
+                  await nftMart.listNFT(nft.target, tokenId, price)
+                  await expect(
+                      nftMart
+                          .connect(player)
+                          .cancelListing(nft.target, tokenId),
+                  ).to.be.revertedWithCustomError(nftMart, "NotOwner")
+              })
+              // removes the listing and emits event
+              it("removes the listing and emits event", async () => {
+                  await nftMart.listNFT(nft.target, tokenId, price)
+                  await expect(nftMart.cancelListing(nft.target, tokenId))
+                      .to.emit(nftMart, "NftCanceled")
+                      .withArgs(deployer.address, nft.target, tokenId)
+
+                  const listedNft = await nftMart.getListing(nft.target, tokenId)
+                  assert(listedNft.seller == ethers.ZeroAddress)
+                  assert(listedNft.price == 0)
+              })
+          })
       })
