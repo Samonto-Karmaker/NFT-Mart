@@ -155,9 +155,87 @@ const { developmentChains } = require("../helper-hardhat-config")
                       .to.emit(nftMart, "NftCanceled")
                       .withArgs(deployer.address, nft.target, tokenId)
 
-                  const listedNft = await nftMart.getListing(nft.target, tokenId)
+                  const listedNft = await nftMart.getListing(
+                      nft.target,
+                      tokenId,
+                  )
                   assert(listedNft.seller == ethers.ZeroAddress)
                   assert(listedNft.price == 0)
+              })
+          })
+          describe("updateListing", function () {
+              // not listed can't update
+              it("reverts if not listed", async () => {
+                  await expect(
+                      nftMart.updateListingPrice(nft.target, tokenId, price),
+                  ).to.be.revertedWithCustomError(nftMart, "NotListed")
+              })
+              // not owner can't update
+              it("reverts if not owner", async () => {
+                  await nftMart.listNFT(nft.target, tokenId, price)
+                  await expect(
+                      nftMart
+                          .connect(player)
+                          .updateListingPrice(nft.target, tokenId, price),
+                  ).to.be.revertedWithCustomError(nftMart, "NotOwner")
+              })
+              // price can't be 0
+              it("reverts if price is 0", async () => {
+                  await nftMart.listNFT(nft.target, tokenId, price)
+                  await expect(
+                      nftMart.updateListingPrice(nft.target, tokenId, 0),
+                  ).to.be.revertedWithCustomError(
+                      nftMart,
+                      "PriceMustBeGreaterThanZero",
+                  )
+              })
+              // is event emitted and listing updated
+              it("updates the listing and emits event", async () => {
+                  await nftMart.listNFT(nft.target, tokenId, price)
+                  const newPrice = ethers.parseEther("0.02")
+                  await expect(
+                      nftMart.updateListingPrice(nft.target, tokenId, newPrice),
+                  )
+                      .to.emit(nftMart, "NftListed")
+                      .withArgs(deployer.address, nft.target, tokenId, newPrice)
+
+                  const listedNft = await nftMart.getListing(
+                      nft.target,
+                      tokenId,
+                  )
+                  assert(listedNft.price.toString() == newPrice.toString())
+              })
+              describe("withdrawProceeds", function () {
+                  // no proceeds can't withdraw
+                  it("reverts if no proceeds", async () => {
+                      await expect(
+                          nftMart.withdrawProceeds(),
+                      ).to.be.revertedWithCustomError(nftMart, "NoProceeds")
+                  })
+                  // withdraw proceeds
+                  it("withdraws proceeds", async () => {
+                      await nftMart.listNFT(nft.target, tokenId, price)
+                      const ownerBalanceBefore =
+                          await ethers.provider.getBalance(deployer.address)
+                      const txResponseBuy = await nftMart
+                          .connect(player)
+                          .buyNFT(nft.target, tokenId, { value: price })
+                      await txResponseBuy.wait(1)
+
+                      const txResponseWithdraw =
+                          await nftMart.withdrawProceeds()
+                      const txReceiptWithdraw = await txResponseWithdraw.wait(1)
+                      const { gasUsed, gasPrice } = txReceiptWithdraw
+                      const gasCost = gasUsed * gasPrice
+
+                      const ownerBalanceAfter =
+                          await ethers.provider.getBalance(deployer.address)
+
+                      assert(
+                          (ownerBalanceAfter + gasCost).toString() ==
+                              (ownerBalanceBefore + price).toString(),
+                      )
+                  })
               })
           })
       })
