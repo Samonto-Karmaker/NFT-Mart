@@ -7,12 +7,12 @@ export default function Header() {
             <h1 className="p-4 font-bold text-3xl">NFT-Mart</h1>
             <div className="flex items-center gap-5">
                 <Link href="/">
-                    <span className="bg-blue-500 p-3 rounded-lg font-bold hover:bg-blue-700">
+                    <span className="bg-gray-500 p-3 rounded-lg font-bold hover:bg-gray-700">
                         Home
                     </span>
                 </Link>
                 <Link href="/sell-nft">
-                    <span className="bg-blue-500 p-3 rounded-lg font-bold hover:bg-blue-700">
+                    <span className="bg-gray-500 p-3 rounded-lg font-bold hover:bg-gray-700">
                         Sell NFT
                     </span>
                 </Link>
