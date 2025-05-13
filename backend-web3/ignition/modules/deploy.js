@@ -1,5 +1,7 @@
 const { ethers, network, run } = require("hardhat")
-const {VERIFICATION_BLOCK_CONFIRMATIONS} = require("../../helper-hardhat-config")
+const {
+    VERIFICATION_BLOCK_CONFIRMATIONS,
+} = require("../../helper-hardhat-config")
 require("dotenv").config()
 
 const main = async () => {
@@ -13,7 +15,9 @@ const main = async () => {
             process.env.ETHERSCAN_API_KEY
         ) {
             console.log("Waiting for block confirmations...")
-            await contract.deployTransaction.wait(VERIFICATION_BLOCK_CONFIRMATIONS)
+            await contract
+                .deploymentTransaction()
+                .wait(VERIFICATION_BLOCK_CONFIRMATIONS)
             await verify(contract.target, [])
         }
     } catch (error) {
