@@ -1,11 +1,14 @@
 "use client"
 
 import "@rainbow-me/rainbowkit/styles.css"
-import { getDefaultConfig, RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit"
+import {
+    getDefaultConfig,
+    RainbowKitProvider,
+    darkTheme,
+} from "@rainbow-me/rainbowkit"
 import { WagmiProvider } from "wagmi"
 import { sepolia, localhost } from "wagmi/chains"
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
-import { MoralisProvider } from "react-moralis"
 
 const config = getDefaultConfig({
     appName: "NFT-Mart",
@@ -17,12 +20,12 @@ const config = getDefaultConfig({
 const queryClient = new QueryClient()
 export default function Provider({ children }: { children: React.ReactNode }) {
     return (
-        <MoralisProvider initializeOnMount={false}>
-            <WagmiProvider config={config}>
-                <QueryClientProvider client={queryClient}>
-                    <RainbowKitProvider theme={darkTheme()}>{children}</RainbowKitProvider>
-                </QueryClientProvider>
-            </WagmiProvider>
-        </MoralisProvider>
+        <WagmiProvider config={config}>
+            <QueryClientProvider client={queryClient}>
+                <RainbowKitProvider theme={darkTheme()}>
+                    {children}
+                </RainbowKitProvider>
+            </QueryClientProvider>
+        </WagmiProvider>
     )
 }
