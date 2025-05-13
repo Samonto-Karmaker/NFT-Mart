@@ -1,0 +1,32 @@
+specVersion: 1.3.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: NftMart
+    network: sepolia
+    source:
+      address: "0xeBbB43734ab349a1da8ef444D9F4A0C6fF2e5239"
+      abi: NftMart
+      startBlock: 8316283
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - NftBought
+        - NftCanceled
+        - NftListed
+      abis:
+        - name: NftMart
+          file: ./abis/NftMart.json
+      eventHandlers:
+        - event: NftBought(indexed address,indexed address,indexed uint256,uint256)
+          handler: handleNftBought
+        - event: NftCanceled(indexed address,indexed address,indexed uint256)
+          handler: handleNftCanceled
+        - event: NftListed(indexed address,indexed address,indexed uint256,uint256)
+          handler: handleNftListed
+      file: ./src/nft-mart.ts
